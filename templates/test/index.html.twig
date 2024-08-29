@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}TEST{% endblock %}
+
+{% block body %}
+    <div class="container mt-5">
+        <h1 class="mb-4">Answer the Questions</h1>
+
+        {{ form_start(form, {'attr': {'class': 'form-horizontal'}}) }}
+
+        <div class="card">
+            <div class="card-body">
+                {% for qk, questionForm in form.children %}
+                    <div class="mb-4">
+                        <h4>{{ form_label(questionForm) }}</h4>
+                        {% for answerKey, answerField in questionForm.children %}
+                            <div class="form-check">
+                                {{ form_widget(answerField, {'attr': {'class': 'form-check-input'}}) }}
+                                {{ form_label(answerField, null, {'attr': {'class': 'form-check-label'}}) }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-4">Submit Answers</button>
+
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

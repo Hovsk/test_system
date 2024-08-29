@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+
+{% block body %}
+<h1>Results</h1>
+
+    <a href="{{ path('show') }}">Try Again</a>
+<div>
+    <h3>Correct Answers</h3>
+    {% for questionId in result.results.correct %}
+        <p>{{ questionId }}</p>
+    {% endfor %}
+</div>
+
+<div>
+    <h3>Incorrect Answers</h3>
+    {% for questionId in result.results.incorrect %}
+        <p>{{ questionId }}</p>
+    {% endfor %}
+</div>
+{% endblock %}
