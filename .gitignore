@@ -33,3 +33,6 @@
 /.phpcs-cache
 /phpcs.xml
 ###< squizlabs/php_codesniffer ###
+
+# Ignore PhpStorm project files
+.idea/
