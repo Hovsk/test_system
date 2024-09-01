@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Entity\TestResult;
 use App\Form\QuestionType;
-use App\Service\TestService;
+use App\Service\TestServiceInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,7 +16,7 @@ class TestController extends AbstractController
 {
     public const NUMBER_OF_SHOWING_QUESTIONS = 4;
 
-    public function __construct(private readonly TestService $testService)
+    public function __construct(private TestServiceInterface $testService)
     {
     }
 

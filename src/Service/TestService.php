@@ -9,7 +9,7 @@ use App\Repository\QuestionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\FormInterface;
 
-class TestService
+class TestService implements TestServiceInterface
 {
     private QuestionRepository $questionRepository;
     private EntityManagerInterface $entityManager;
