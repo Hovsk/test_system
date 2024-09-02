@@ -51,19 +51,16 @@ class TestController extends AbstractController
 
     private function handleValidFormSubmission($form, array $questions, SessionInterface $session): Response
     {
-        $resultsDTO = $this->testService->processFormSubmission($form, $questions);
+        try {
+            $resultsDTO = $this->testService->processFormSubmission($form, $questions);
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'There was an error processing your submission. Please try again.');
+            return $this->redirectToRoute('show');
+        }
 
         $session->remove('questions');
 
         return $this->redirectToRoute('app_test_results', ['id' => $resultsDTO->getResultId()]);
-    }
-
-    #[Route('/results/{id}', name: 'app_test_results')]
-    public function results(TestResult $testResult): Response
-    {
-        return $this->render('test/results.html.twig', [
-            'result' => $testResult,
-        ]);
     }
 
     private function createQuestionsForm(array $questions): FormInterface
@@ -78,5 +75,13 @@ class TestController extends AbstractController
         }
 
         return $formBuilder->getForm();
+    }
+
+    #[Route('/results/{id}', name: 'app_test_results')]
+    public function results(TestResult $testResult): Response
+    {
+        return $this->render('test/results.html.twig', [
+            'result' => $testResult,
+        ]);
     }
 }

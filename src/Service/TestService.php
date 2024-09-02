@@ -4,22 +4,19 @@ namespace App\Service;
 
 use App\DTO\TestResultDTO;
 use App\Entity\Question;
-use App\Entity\TestResult;
+use App\Factory\TestResultFactory;
 use App\Repository\QuestionRepository;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\TestResultRepository;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class TestService implements TestServiceInterface
 {
-    private QuestionRepository $questionRepository;
-    private EntityManagerInterface $entityManager;
-
     public function __construct(
-        QuestionRepository $questionRepository,
-        EntityManagerInterface $entityManager,
+        private readonly QuestionRepository $questionRepository,
+        private readonly TestResultRepository $testResultRepository,
+        private readonly TestResultFactory $testResultFactory
     ) {
-        $this->questionRepository = $questionRepository;
-        $this->entityManager = $entityManager;
     }
 
     public function getRandomQuestions(int $limit): array
@@ -32,6 +29,12 @@ class TestService implements TestServiceInterface
 
     public function processFormSubmission(FormInterface $form, array $questions): TestResultDTO
     {
+        $this->validateForm($form);
+
+        if (empty($questions)) {
+            throw new BadRequestHttpException('No questions provided.');
+        }
+
         $correctQuestionIds = [];
         $incorrectQuestionIds = [];
 
@@ -46,22 +49,44 @@ class TestService implements TestServiceInterface
             }
         }
 
-        $testResult = $this->createTestResult($correctQuestionIds, $incorrectQuestionIds);
+        $testResult = $this->testResultFactory->create($correctQuestionIds, $incorrectQuestionIds);
+        $this->testResultRepository->save($testResult);
 
         return new TestResultDTO($testResult);
     }
 
+    private function validateForm(FormInterface $form): void
+    {
+        if (!$form->isSubmitted()) {
+            throw new BadRequestHttpException('The form was not submitted.');
+        }
+
+        if (!$form->isValid()) {
+            throw new BadRequestHttpException(
+                'The form contains invalid data. Please check all fields and try again.'
+            );
+        }
+    }
+
     private function getCorrectAnswerIds(Question $question): array
     {
-        return $question->getCorrectAnswers()->first()->getCorrectCombinations();
+        $correctAnswers = $question->getCorrectAnswers()->first();
+
+        if (!$correctAnswers) {
+            throw new \LogicException('No correct answers found for the question ID: ' . $question->getId());
+        }
+
+        return $correctAnswers->getCorrectCombinations();
     }
 
     private function getSubmittedAnswerIds(FormInterface $form, Question $question): array
     {
         $submittedAnswers = [];
+        $formQuestion = $form->get($question->getId());
 
         foreach ($question->getAnswers() as $answer) {
-            if ($form->get($question->getId())->get($answer->getId())->getData()) {
+            $formAnswer = $formQuestion->get($answer->getId());
+            if ($formAnswer->getData()) {
                 $submittedAnswers[] = $answer->getId();
             }
         }
@@ -73,19 +98,5 @@ class TestService implements TestServiceInterface
     {
         return empty(array_diff($correctAnswers, $submittedAnswers))
             && empty(array_diff($submittedAnswers, $correctAnswers));
-    }
-
-    private function createTestResult(array $correctAnswers, array $incorrectAnswers): TestResult
-    {
-        $testResult = new TestResult();
-        $testResult->setResults([
-            'correct' => $correctAnswers,
-            'incorrect' => $incorrectAnswers,
-        ]);
-
-        $this->entityManager->persist($testResult);
-        $this->entityManager->flush();
-
-        return $testResult;
     }
 }
