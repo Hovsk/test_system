@@ -34,5 +34,5 @@ This project is a simple testing system built with the Symfony framework that su
 Run unit tests using PHPUnit:
 
 ```bash
-docker-compose exec php php bin/phpunit
+php bin/phpunit
 ```
