@@ -26,10 +26,8 @@ This project is a simple testing system built with the Symfony framework that su
    - create and start Docker containers,
    - update the `DATABASE_URL` in `.env` file,
    - run db migrations and start symfony server.
-   
-````
-  Update your database credentials and edit the `.env` file if necessary.
-````
+
+> Update your database credentials and edit the `.env` file if necessary.
 
 ## Testing
 
